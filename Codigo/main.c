@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "base64.h" //El metodo de codificacion/Decodificacion esta tomado de http://base64.sourceforge.net/
 #include "constantes.h"
-#include "funciones.c"
+#include "funciones.h"
 
 
 int main(int argc, char **argv){
@@ -13,7 +13,7 @@ int main(int argc, char **argv){
          case MODO_DECODIFICADOR:
             iIndexARG = 1;
    		case MODO_CODIFICADOR:
-            iError = b64(cModo,argv[iIndexARG+2],argv[iIndexARG+4],B64_DEF_LINE_SIZE);
+            iError = b64(cModo,argv[iIndexARG+2],argv[iIndexARG+4]);
    			if(iError==0){
                puts(MSG_OK);
             }else{

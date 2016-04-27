@@ -21,6 +21,7 @@
 #define MSG_ERR_ARGS "Los argumentos no han sido llamados de forma correcta.\n"
 #define MSG_HELP  "La invocacion debe ser de la forma: [-d] -i NOMBRE_ARCHIVO_ORIGEN  -o NOMBRE_ARCHIVO_SALIDA\n   \t-h\tVer Ayuda\n\t-V\tVersion Actual\n\t-d\tModo Decodificador\n \t-i\tNombre archivo de entrada\n\t-o\tNombre archivo de salida\n\n" 
 #define MSG_OK "Operacion Completada con Exito\n"
+#define MSG_FILE_B64_ERROR "El archivo no posee una cadena base 64 valida\n"
 //Modos
 #define MODO_CODIFICADOR 'e'
 #define MODO_DECODIFICADOR 'd'

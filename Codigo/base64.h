@@ -67,7 +67,7 @@ static void encodeblock( unsigned char *in, unsigned char *out, int len )
 **
 ** base64 encode a stream adding padding and line breaks as per spec.
 */
-static int encode( FILE *infile, FILE *outfile, int linesize )
+static int encode( FILE *infile, FILE *outfile)
 {
     unsigned char in[3];
 	unsigned char out[4];
@@ -101,10 +101,7 @@ static int encode( FILE *infile, FILE *outfile, int linesize )
             }
             blocksout++;
         }
-        if( blocksout >= (linesize/4) || feof( infile ) != 0 ) {
-            if( blocksout > 0 ) {
-                fprintf( outfile, "\n" );
-            }
+        if( feof( infile ) != 0 ) {
             blocksout = 0;
         }
     }
@@ -182,7 +179,7 @@ static int decode( FILE *infile, FILE *outfile )
 ** 'engine' that opens streams and calls encode/decode
 */
 
-static int b64( char opt, char *infilename, char *outfilename, int linesize )
+static int b64( char opt, char *infilename, char *outfilename)
 {
     FILE *infile;
     int retcode = B64_FILE_ERROR;
@@ -209,7 +206,7 @@ static int b64( char opt, char *infilename, char *outfilename, int linesize )
         }
         else {
             if( opt == 'e' ) {
-                retcode = encode( infile, outfile, linesize );
+                retcode = encode( infile, outfile );
             }
             else {
                 retcode = decode( infile, outfile );
