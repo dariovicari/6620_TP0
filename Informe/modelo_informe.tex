@@ -1,0 +1,156 @@
+% Definición del tipo de documento.                                           %
+% Posibles tipos de papel: a4paper, letterpaper, legalpapper                  %
+% Posibles tamaños de letra: 10pt, 11pt, 12pt                                 %
+% Posibles clases de documentos: article, report, book, slides                %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper,10pt]{article}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Los paquetes permiten ampliar las capacidades de LaTeX.                     %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Paquete para inclusión de gráficos.
+\usepackage{graphicx}
+
+% Paquete para definir la codificación del conjunto de caracteres usado
+% (latin1 es ISO 8859-1).
+\usepackage[latin1]{inputenc}
+
+% Paquete para definir el idioma usado.
+\usepackage[spanish]{babel}
+
+
+% Título principal del documento.
+\title{		\textbf{Trabajo práctico N°0}}
+
+% Información sobre los autores.
+\author{	Etcheverri Franco, \textit{Padrón Nro. 95.812}                     \\
+            \texttt{ franverri@hotmail.com }                                              \\
+            Vicari Dario, \textit{Padrón Nro. 86.559}                     \\
+            \texttt{ dariovicari@yahoo.com.ar }                                              \\
+            Gonzalez Esteban, \textit{Padrón Nro. 54.476}                     \\
+            \texttt{ egonza@fi.uba.ar }                                              \\
+ \\[2.5ex]
+            \normalsize{1er. Cuatrimestre de 2016}                       \\
+            \normalsize{66.20 Organización de Computadoras}                             \\
+            \normalsize{Facultad de Ingeniería, Universidad de Buenos Aires}            \\
+       }
+\date{}
+
+\begin{document}
+
+% Inserta el título.
+\maketitle
+
+\begin{figure}[!htp]
+\begin{center}
+\includegraphics[width=0.5\textwidth]{fig001.eps}
+\end{center}
+\end{figure}
+
+% Quita el número en la primer página.
+\thispagestyle{empty}
+
+\pagebreak[5]
+
+\section{Introducción}
+
+Este primer trabajo práctico consiste en desarrollar un programa en el lenguaje C, el cual va a recibir como entrada un archivo y luego se va a proceder a codificarlo a base 64 que, como bien explica el enunciado, se creó para poder transmitir archivos binarios en medios que sólo admitían texto (64 es la mayor potencia de 2 que se podía representar sólo con caracteres ASCII imprimibles). Adicionalmente, el programa también debe ofrecer la posibilidad de realizar el trabajo inverso, es decir, recibir un texto codificado y llevarlo a su estado inicial decodificándolo.
+
+
+\section{Desarrollo}
+
+Para llevar adelante el trabajo práctico se dividió la tarea principalmente en tres secciónes:
+
+\begin{itemize}
+    \item  \textbf{Ayudas brindadas} 
+	\item \textbf{Codificación}
+	\item \textbf{Decodificación}
+\end{itemize}
+
+En los apartados que preceden a esta sección se explicaran con mayor detalle la implementación de cada una de ellas.
+
+
+\subsection{Ayudas brindadas}
+
+Se implementó un menu de ayuda para facilitarle la tarea al usuario que va a utilizar el programa. Al ejecutar el siguiente comando "./tp0 -h", se despliega un menu con los servicios y posibilidades de ejecución del programa:
+
+\begin{itemize}
+    \item -V, --version (Print version and quit)
+	\item -h, --help (Print this information)
+	\item -o, --output (Path to output file)
+	\item -i, --input (Path to input file)
+	\item -d, --decode (Decode a base64-encoded file)
+\end{itemize}
+
+En términos de código, la forma en que se logro desarrollar esta sección fue a partir de la entrada de los paramétros del programa que en el lenguaje utilizado son de fácil acceso mediante las variables \textbf{argc} y \textbf{argv} provistas por el entorno.
+
+\subsection{Codificación}
+
+Para pasar de cualquier archivo a uno en base 64, es decir, codificar la información, utilizamos una funcion llamada b64 la cual recibe los siguientes parámetros: \\
+
+
+\textbf{"static int b64( char opt, char *infilename, char *outfilename, int linesize )"}
+
+\begin{itemize}
+    \item \textbf{opt:} indica si debe codificarse ('e') o decodificarse ('d') el archivo.
+    \item \textbf{infilename:} contiene el nombre del archivo origen que va a ser procesado.
+    \item \textbf{outfilename:} contiene el nombre del archivo destino donde se van a guardar los datos luego de realizar el codificado o decodificado.
+\end{itemize}
+
+Lo que realiza esta función básicamente es ir leyendo caracteres del archivo origen y guardandolos en un buffer múltiplo de 3 (el que usaremos va a ser exactamente de 3 chars es decir 24 bites) y cuando el buffer se encuentra lleno codificarlo a b64 dividiendolo en 4 elementos, cada uno de ellos de 6 bites.
+
+Esto hace que cualquier combinacion de unos y ceros vaya a parar a un elemento dentro de la tabla de caracteres permitidos por la codificación en base 64. Por último, estos nuevos caracteres codificados van a ser escritos en el nuevo archivo destino. 
+
+Cabe destacar que, en el caso de que se llegue al fin de archivo antes de llenar el buffer nuevamente, se procedera a completarlo con caracteres '=' para lograr que sea múltiplo de 3 y poder codificarlo. 
+
+Un aspecto interesante de la implementación es el codificado del buffer de 24 bits. Para ellos se van a utilizar variables del tipo char y operadores logicos para acomodar la posición de los bits significativos. Van a ocurrir tres posibilidades diferentes en este buffer:
+
+\begin{itemize}
+    \item \textbf{Primer elemento:} al obtener el primer elemento del buffer de caracteres obtendríamos 8 bits, de los cuales sólo nos interesan los 6 primeros. Por lo tanto al aplicar un desplazamiento lógico de dos lugares hacia la derecha de esa variable donde alojamos el caracter nos preveería el efecto deseado, ya que los dos bits mas significativos quedarían en cero, que es equivalente a darle importancia únicamente a los 6 bits restantes.
+       \item \textbf{Segundo elemento:} para poder conformar el segundo elemento del archivo codificado en base 64 necesitaríamos los 2 bits que no se utilizaron del primer char para el elemento anterior y 4 bits más correspondientes al segundo char del buffer. Para ello se va a realizar operaciones logicas de and y de desplazamiento. La forma en que opera el programa se puede observar en la Figura~\ref{fig:tabla1}  para no tener que explicar en palabras como se procesa cada elemento lo cual hace más dificil la comprensión.
+       
+\end{itemize}
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=1.0\textwidth]{Tabla1.eps}
+	\caption{Codificación de elementos}
+ 	\label{fig:tabla1}
+	\end{center}
+\end{figure}
+
+\subsection{Deodificación}
+
+Para el decodificado, es decir, a partir de un archivo en base 64 transformalo a un archivo que acepte todos los caracteres de la tabla ASCII, se utiliza la misma función pero pasandole como parámetro el caracter 'd' en la opcion "opt".
+
+El procedimiento es similar al de la codificación pero ahora se utiliza un buffer con 4 elementos para decodificar, ya que para poder obtener 3 caracteres formados por 8 bits necesito 4 de 6 bits. Por lo que las operaciones para cada paso son las mostradas en la Figura~\ref{fig:tabla2}
+
+\begin{figure}[!htp]
+	\begin{center}
+		\includegraphics[width=1.0\textwidth]{Tabla2.eps}
+		\caption{Decodificación de elementos}
+ 		\label{fig:tabla2}
+	\end{center}
+\end{figure}
+
+\section{Conclusiones}
+
+Dada la finalidad del trabajo práctico, que consistía en familiarizarse con las herramientas de software que usaremos en los siguientes trabajos, implementando un programa (y su correspondiente documentación) que resuelva el problema, podemos concluir que se logró dicho objetivo al aprender a utilizar herramientas que hasta el momento no manejabamos. 
+
+Por otra parte, por el lado del programa escrito en C propiamente hablando, la dificultad fue acorde al propósito mencionado anteriormente, ya que si bien nos llevó su tiempo pensarlo y realizarlo, no fue excesivo y nos permitió enfocarnos en le correcta utilización de las herramientas complementarías y la elaboración de un informe adaptándonos a las normas pedidas por el curso.
+
+
+\section{Bibliografía y Recursos utilizados}
+
+\begin{enumerate}
+ \item https://en.wikibooks.org/wiki/LaTeX/
+ \item http://stackoverflow.com
+ \item http://base64.sourceforge.net/
+ \item https://es.wikipedia.org/wiki/Base64
+\end{enumerate}
+
+
+
+\end{document}
